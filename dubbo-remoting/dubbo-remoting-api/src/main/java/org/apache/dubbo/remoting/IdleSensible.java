@@ -28,6 +28,9 @@ public interface IdleSensible {
      *
      * @return whether has the ability to handle idle connection
      */
+
+    // 空闲连接是否可以处理 默认为 false，实现依赖于专用计时器（时间轮HashedWheelTimer）来处理空闲连接
+    // netty 这里会设置为true 表示自己有能力处理空闲连接 使用的是 IdleStateHandler
     default boolean canHandleIdle() {
         return false;
     }

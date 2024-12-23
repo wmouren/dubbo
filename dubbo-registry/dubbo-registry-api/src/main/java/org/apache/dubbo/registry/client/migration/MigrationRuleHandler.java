@@ -53,13 +53,18 @@ public class MigrationRuleHandler<T> {
                 migrationInvoker.refreshInterfaceInvoker();
             }
         } else {
+
+            // dubbo 3.x 应用级服务发现
             switch (rule.getStep()) {
+                // 应用级优先
                 case APPLICATION_FIRST:
                     migrationInvoker.migrateToServiceDiscoveryInvoker(false);
                     break;
+                // 强制使用应用级服务发现
                 case FORCE_APPLICATION:
                     migrationInvoker.migrateToServiceDiscoveryInvoker(true);
                     break;
+                // 强制使用接口级别发现规则 3.x 以下版本都走这里
                 case FORCE_INTERFACE:
                 default:
                     migrationInvoker.fallbackToInterfaceInvoker();

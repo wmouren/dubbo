@@ -155,6 +155,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public synchronized void fallbackToInterfaceInvoker() {
+
         refreshInterfaceInvoker();
         setListener(invoker, () -> {
             this.destroyServiceDiscoveryInvoker(this.serviceDiscoveryInvoker);
@@ -330,6 +331,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             if (logger.isDebugEnabled()) {
                 logger.debug("Re-subscribing interface addresses for interface " + type.getName());
             }
+            // 注册服务消费者信息 并且订阅服务提供者列表  InterfaceCompatibleRegistryProtocol
             invoker = registryProtocol.getInvoker(cluster, registry, type, url);
 
             if (migrationMultiRegistry) {

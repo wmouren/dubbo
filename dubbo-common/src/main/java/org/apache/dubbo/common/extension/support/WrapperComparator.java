@@ -22,6 +22,7 @@ import java.util.Comparator;
 
 /**
  * OrderComparator
+ * 包装扩展点的比较器 用来比较扩展点的优先级
  */
 public class WrapperComparator implements Comparator<Object> {
 

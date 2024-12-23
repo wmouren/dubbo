@@ -522,9 +522,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     if (logger.isInfoEnabled()) {
                         logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                     }
+                    // 代理服务提供者
                     Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
+                    // 服务导出并注册
                     Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
                     exporters.add(exporter);
                 }

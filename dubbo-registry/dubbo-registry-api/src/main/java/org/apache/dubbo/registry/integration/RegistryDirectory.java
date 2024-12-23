@@ -189,6 +189,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
             this.forbidden = false; // Allow to access
+            // URL 转换为 Invoker
             Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
             /**
@@ -327,6 +328,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                         enabled = url.getParameter(ENABLED_KEY, true);
                     }
                     if (enabled) {
+                        // 通过 SPI 加载 Protocol 实现类，并调用 refer 方法生成 Invoker
                         invoker = new InvokerDelegate<>(protocol.refer(serviceType, url), url, providerUrl);
                     }
                 } catch (Throwable t) {

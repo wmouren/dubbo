@@ -26,6 +26,7 @@ import java.util.Comparator;
 
 /**
  * OrderComparator
+ * 自适应扩展点的比较器 用来比较扩展点的优先级
  */
 public class ActivateComparator implements Comparator<Class> {
 

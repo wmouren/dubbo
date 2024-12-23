@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
 
 import static org.apache.dubbo.common.extension.Inject.InjectType.ByName;
 
+// 标记扩展点是否自动注入标记注解 类似于spring的@Autowire
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})

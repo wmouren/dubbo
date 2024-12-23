@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * The annotated class will only work as a wrapper when the condition matches.
  */
+// 装饰者标记注解 用来标记扩展点是否是装饰者 可以使用条件来匹配
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Wrapper {
 

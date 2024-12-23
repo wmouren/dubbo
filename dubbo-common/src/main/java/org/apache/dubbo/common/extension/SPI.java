@@ -51,6 +51,7 @@ import java.lang.annotation.Target;
  * instead of reporting which extract extension implementation fails and the extract reason.
  * </p>
  */
+// 标记扩展点的注解
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

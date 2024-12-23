@@ -481,6 +481,7 @@ public class RegistryProtocol implements Protocol {
 
     protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url, Map<String, String> parameters) {
         URL consumerUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
+        // 构建一个可感知服务迁移的 MigrationInvoker
         ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url, consumerUrl);
         return interceptInvoker(migrationInvoker, url, consumerUrl);
     }
@@ -491,6 +492,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url, URL consumerUrl) {
+        // MigrationRuleListener
         List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
             return invoker;
@@ -513,17 +515,30 @@ public class RegistryProtocol implements Protocol {
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
+    /**
+     * Consumer 注册和订阅服务提供者 构建 Invoker
+     * @param directory
+     * @param cluster
+     * @param registry
+     * @param type
+     * @return
+     * @param <T>
+     */
     protected <T> ClusterInvoker<T> doCreateInvoker(DynamicDirectory<T> directory, Cluster cluster, Registry registry, Class<T> type) {
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<String, String>(directory.getConsumerUrl().getParameters());
         URL urlToRegistry = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
+        // 判断消费者是否要注册到注册中心
         if (directory.isShouldRegister()) {
             directory.setRegisteredConsumerUrl(urlToRegistry);
+            // 将消费者注册到注册中心
             registry.register(directory.getRegisteredConsumerUrl());
         }
+
         directory.buildRouterChain(urlToRegistry);
+        // 订阅拉取服务提供者信息
         directory.subscribe(toSubscribeUrl(urlToRegistry));
 
         return (ClusterInvoker<T>) cluster.join(directory);

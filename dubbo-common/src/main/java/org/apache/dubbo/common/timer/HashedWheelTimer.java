@@ -80,7 +80,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class HashedWheelTimer implements Timer {
 
     /**
-     * may be in spi?
+     * may be in spi? static 都是类变量 用于记录当前实例数量 防止创建过多实例，导致性能问题
      */
     public static final String NAME = "hased";
 
@@ -89,10 +89,14 @@ public class HashedWheelTimer implements Timer {
     private static final AtomicInteger INSTANCE_COUNTER = new AtomicInteger();
     private static final AtomicBoolean WARNED_TOO_MANY_INSTANCES = new AtomicBoolean();
     private static final int INSTANCE_COUNT_LIMIT = 64;
+
+    // 原子更新器 用于更新工作线程状态 0-初始化 1-启动 2-关闭 防止多线程操作
     private static final AtomicIntegerFieldUpdater<HashedWheelTimer> WORKER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
+    // 时间轮工作执行逻辑 Runnable
     private final Worker worker = new Worker();
+    // 工作线程
     private final Thread workerThread;
 
     private static final int WORKER_STATE_INIT = 0;
@@ -103,17 +107,26 @@ public class HashedWheelTimer implements Timer {
      * 0 - init, 1 - started, 2 - shut down
      */
     @SuppressWarnings({"unused", "FieldMayBeFinal"})
+    // 工作线程状态 默认为 0 控制整个时间轮的启动和关闭
     private volatile int workerState;
 
+    // 时间轮的刻度间隔
     private final long tickDuration;
+    // 时间轮的刻度任务链表
     private final HashedWheelBucket[] wheel;
+    // 时间轮的掩码 计算刻度位置 任务时间戳 & 掩码 = 刻度位置
     private final int mask;
+    // 时间轮的开始
     private final CountDownLatch startTimeInitialized = new CountDownLatch(1);
+    // 时间轮任务队列 用于存放新创建的任务 任务会在下一个刻度被处理 然后计算任务的刻度位置 放入对应的刻度任务链表
     private final Queue<HashedWheelTimeout> timeouts = new LinkedBlockingQueue<>();
+    // 取消的任务队列 用于存放取消的任务
     private final Queue<HashedWheelTimeout> cancelledTimeouts = new LinkedBlockingQueue<>();
+    // 最大等待任务数
     private final AtomicLong pendingTimeouts = new AtomicLong(0);
+    // 最大等待任务数
     private final long maxPendingTimeouts;
-
+    // 时间轮开始时间
     private volatile long startTime;
 
     /**
@@ -324,6 +337,7 @@ public class HashedWheelTimer implements Timer {
         // Wait until the startTime is initialized by the worker.
         while (startTime == 0) {
             try {
+                // 阻塞等待时间轮任务执行线程初始化时间轮开始时间
                 startTimeInitialized.await();
             } catch (InterruptedException ignore) {
                 // Ignore - it will be ready very soon.
@@ -374,6 +388,7 @@ public class HashedWheelTimer implements Timer {
         return WORKER_STATE_SHUTDOWN == WORKER_STATE_UPDATER.get(this);
     }
 
+    // 创建新的任务
     @Override
     public Timeout newTimeout(TimerTask task, long delay, TimeUnit unit) {
         if (task == null) {
@@ -383,6 +398,7 @@ public class HashedWheelTimer implements Timer {
             throw new NullPointerException("unit");
         }
 
+        // 判断当前时间轮是否已经达到最大等待任务数 如果是将任务拒绝
         long pendingTimeoutsCount = pendingTimeouts.incrementAndGet();
 
         if (maxPendingTimeouts > 0 && pendingTimeoutsCount > maxPendingTimeouts) {

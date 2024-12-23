@@ -30,6 +30,7 @@ import java.lang.annotation.Target;
  * @see ExtensionLoader
  * @see URL
  */
+// 自适应的扩展点标记注解
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})

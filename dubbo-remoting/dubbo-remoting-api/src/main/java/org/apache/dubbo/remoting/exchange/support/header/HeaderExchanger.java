@@ -36,6 +36,8 @@ public class HeaderExchanger implements Exchanger {
 
     @Override
     public ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {
+        // Transporters 是一个工具类，用于创建客户端和服务端 传输层对象 基于 Netty 实现 通过 URL 获取 Transporter 实现类对象
+        // 传输层一般用来处理网络通信，比如 Netty、Mina 等 通过 Transporters.connect 方法创建客户端对象
         return new HeaderExchangeClient(Transporters.connect(url, new DecodeHandler(new HeaderExchangeHandler(handler))), true);
     }
 

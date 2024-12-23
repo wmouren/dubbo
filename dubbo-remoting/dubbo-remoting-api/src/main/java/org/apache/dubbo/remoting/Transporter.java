@@ -28,6 +28,8 @@ import org.apache.dubbo.common.extension.SPI;
  *
  * @see org.apache.dubbo.remoting.Transporters
  */
+// 传输层 SPI 接口 用于网络传输 io 通信 默认实现是 netty 用于网络通信，包括服务端和客户端。在 Exchanger 层之下，
+// 主要用于消息的发送和接收 TCP 连接的建立和断开等操作
 @SPI("netty")
 public interface Transporter {
 

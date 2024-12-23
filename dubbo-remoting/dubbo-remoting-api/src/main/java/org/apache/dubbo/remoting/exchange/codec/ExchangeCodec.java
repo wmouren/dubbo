@@ -50,13 +50,13 @@ import java.util.Date;
  */
 public class ExchangeCodec extends TelnetCodec {
 
-    // header length.
+    // header length. 私有协议头部的长度
     protected static final int HEADER_LENGTH = 16;
-    // magic header.
+    // magic header. 魔数 占 2 字节 标识一个dubbo协议包数据的开始
     protected static final short MAGIC = (short) 0xdabb;
     protected static final byte MAGIC_HIGH = Bytes.short2bytes(MAGIC)[0];
     protected static final byte MAGIC_LOW = Bytes.short2bytes(MAGIC)[1];
-    // message flag.
+    // message flag. 请求标志位 占 1 字节
     protected static final byte FLAG_REQUEST = (byte) 0x80;
     protected static final byte FLAG_TWOWAY = (byte) 0x40;
     protected static final byte FLAG_EVENT = (byte) 0x20;
@@ -67,6 +67,9 @@ public class ExchangeCodec extends TelnetCodec {
         return MAGIC;
     }
 
+    /**
+     * 序列化
+     */
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
         if (msg instanceof Request) {
@@ -78,6 +81,9 @@ public class ExchangeCodec extends TelnetCodec {
         }
     }
 
+    /**
+     * 反序列化
+     */
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         int readable = buffer.readableBytes();

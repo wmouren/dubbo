@@ -81,16 +81,30 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
  * @see org.apache.dubbo.common.extension.Adaptive
  * @see org.apache.dubbo.common.extension.Activate
  */
+
+/**
+ *1、自动注入扩展点、
+ * 2、自动包装扩展点、
+ * 3、默认扩展点是一个自适应实例
+
+ * 微内核思想，设计好整个处理的流水线，在每个关键节点通过 SPI 扩展点的方式进行扩展实现，面向接口编程，接口和实现分离
+ * 基于这样的思想可以实现很多功能，比如：自动注入、自动包装、自动激活、自动加载等等
+ * 也可以很轻松的替换实现方式
+  */
+
 public class ExtensionLoader<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
 
+    // 扩展点类型缓存
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>(64);
 
+    // class 的实例缓存
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>(64);
 
+    // 扩展点接口类型
     private final Class<?> type;
 
     private final ExtensionFactory objectFactory;

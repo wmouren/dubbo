@@ -310,6 +310,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         serviceMetadata.getAttachments().putAll(map);
 
+        // 客户端（消费端）创建代理
         ref = createProxy(map);
 
         serviceMetadata.setTarget(ref);
@@ -328,6 +329,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
+        // 判断是否只是本地调用 injvm 模式
         if (shouldJvmRefer(map)) {
             URL url = new URL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = REF_PROTOCOL.refer(interfaceClass, url);
@@ -373,10 +375,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     }
                 }
             }
-
+            // 只有单个服务提供者或者注册中心
             if (urls.size() == 1) {
+                // 调用 RegisterProtocol 的 refer 构建 Invoker
                 invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
             } else {
+                // 多个注册中心或者多个服务提供者
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
@@ -389,6 +393,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     }
                 }
 
+                // 将多个 Invoker 对象伪装成一个 Invoker 对象 ClusterInvoker（用于客户端的路由、负载均衡、轮询策略）
                 if (registryURL != null) { // registry url is available
                     // for multi-subscription scenario, use 'zone-aware' policy by default
                     String cluster = registryURL.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
@@ -400,6 +405,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                             (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) :
                                     Cluster.DEFAULT)
                             : Cluster.DEFAULT;
+                    // 获取 Cluster 将所有的  invokers 加入到可调用的目录中
                     invoker = Cluster.getCluster(cluster).join(new StaticDirectory(invokers));
                 }
             }
@@ -412,7 +418,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
         MetadataUtils.publishServiceDefinition(consumerURL);
 
-        // create service proxy
+        // create service proxy 根据 Invoker 真正生成代理类 PROXY_FACTORY= ProxyFactory$Adaptive@xxxx
         return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
     }
 

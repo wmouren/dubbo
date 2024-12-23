@@ -38,6 +38,14 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
+/**
+ * MigrationRuleListener 用于监听配置中心的配置变化，当配置中心的配置发生变化时，MigrationRuleListener 会根据新的配置信息，对服务进行迁移。
+ * MigrationRuleListener 会在服务导出时，对服务进行迁移，因此 MigrationRuleListener 实现了 RegistryProtocolListener 接口。
+ *
+ * 应用级服务发现地址迁移监听器
+ *
+ * 3.x dubbo 的新特性应用级别服务发现 参考 https://dubbo.apache.org/zh-cn/overview/mannual/java-sdk/upgrades-and-compatibility/service-discovery/
+ */
 @Activate
 public class MigrationRuleListener implements RegistryProtocolListener, ConfigurationListener {
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
@@ -93,10 +101,16 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     }
 
+    /**
+     * 当服务导入时，MigrationRuleListener 会对服务进行迁移。
+     *
+     */
     @Override
     public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
+        // 包装的 MigrationInvoker
         MigrationInvoker<?> migrationInvoker = (MigrationInvoker<?>) invoker;
-
+        // 将消费者 MigrationInvoker 添加到 listeners 中  当发生服务器迁移时，会调用 MigrationInvoker 的 migrateToServiceDiscoveryInvoker 方法进行迁移
+        // 层层包装的思想 将 MigrationInvoker 包装成为一个 MigrationRuleHandler 添加到观察者 listeners 中
         MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
         listeners.add(migrationListener);
 

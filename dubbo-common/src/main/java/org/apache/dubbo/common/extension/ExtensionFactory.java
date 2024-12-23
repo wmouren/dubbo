@@ -18,6 +18,7 @@ package org.apache.dubbo.common.extension;
 
 /**
  * ExtensionFactory
+ * 扩展点工厂接口 用来获取一些注入的对象
  */
 @SPI
 public interface ExtensionFactory {

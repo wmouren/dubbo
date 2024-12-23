@@ -39,6 +39,7 @@ import java.lang.annotation.Target;
  * @see URL
  * @see ExtensionLoader
  */
+// 标记扩展点是否自动激活标记注解 最典型的使用场景就是在dubbo中的过滤器
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
